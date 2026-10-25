@@ -1,7 +1,7 @@
 import os, json, sqlite3, hashlib, uuid, secrets, re
 from datetime import datetime, timezone
 from typing import Any
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Body
 from fastapi.responses import JSONResponse
 from openai import OpenAI
 
@@ -92,9 +92,7 @@ def build_initial(req):
 def health(): return {"status":"ok"}
 
 @app.post("/v2/incidents")
-async def create_incident(request: Request):
-    try: body=await request.json()
-    except Exception: return safe_error(400,"invalid_json")
+async def create_incident(body: dict = Body(...)):
     if not isinstance(body,dict) or body.get("profile")!=PROFILE: return safe_error(422,"unsupported_profile")
     for k in ("runId","agentName","publicMarker","incident","toolCatalog","policy"):
         if k not in body: return safe_error(422,"invalid_request")
